@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Πλατφόρμα Προετοιμασίας Γραπτού Διαγωνισμού ΑΣΕΠ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary: #004d99;
+            --primary-hover: #003366;
+            --secondary: #f0f4f8;
+            --bg: #e9ecef;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --border: #dee2e6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .app-header h1 { font-size: 24px; font-weight: 500; margin-bottom: 5px; }
+        .app-header p { font-size: 14px; opacity: 0.9; }
+        .app-body { padding: 30px; }
+        .screen { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-main); }
+        
+        select {
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 16px; background-color: #fff; color: var(--text-main); outline: none; cursor: pointer;
+        }
+        select:focus { border-color: var(--primary); }
+
+        .radio-group { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+        .radio-label {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; background: var(--secondary);
+            padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border); font-size: 15px;
+        }
+        .radio-label:hover { background-color: #e2e8f0; }
+        input[type="radio"] { cursor: pointer; }
+
+        .btn {
+            display: inline-block; width: 100%; padding: 14px 20px; background-color: var(--primary);
+            color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 500;
+            cursor: pointer; transition: background-color 0.3s; text-align: center;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+
+        /* Quiz Elements */
+        .quiz-status { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .question-text { font-size: 18px; font-weight: 500; margin-bottom: 25px; line-height: 1.6; }
+        .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .option-btn {
+            background-color: var(--secondary); border: 1px solid var(--border); padding: 15px;
+            border-radius: 8px; text-align: left; font-size: 16px; cursor: pointer; color: var(--text-main);
+        }
+        .option-btn:hover { background-color: #e2e8f0; border-color: #cbd5e1; }
+        .option-btn.selected { background-color: #e0f2fe; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+
+        /* Results Elements */
+        .score-container { text-align: center; margin-bottom: 30px; padding: 25px; background-color: var(--secondary); border-radius: 8px; }
+        .score-percentage { font-size: 48px; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
+        .score-text { font-size: 16px; color: var(--text-muted); }
+        .review-section h3 { margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+        .review-container { max-height: 500px; overflow-y: auto; padding-right: 5px; }
+        .review-item { margin-bottom: 15px; padding: 15px; border-radius: 8px; border-left: 4px solid transparent; background-color: #f8f9fa; }
+        .review-item.correct { border-left-color: var(--success); background-color: var(--success-light); }
+        .review-item.wrong { border-left-color: var(--danger); background-color: var(--danger-light); }
+        .review-q { font-weight: 500; margin-bottom: 10px; font-size: 15px; }
+        .review-ans { font-size: 14px; margin-bottom: 5px; }
+        .text-success { color: #155724; font-weight: 500; }
+        .text-danger { color: #721c24; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="app-header">
+        <h1>Πλατφόρμα Προετοιμασίας ΑΣΕΠ</h1>
+        <p>Ηλεκτρονική Εξέταση Γνώσεων</p>
+    </div>
+
+    <div class="app-body">
+        
+        <!-- Setup -->
+        <div id="setup-screen" class="screen active">
+            <div class="form-group">
+                <label for="category-select">Επιλέξτε Γνωστικό Αντικείμενο (11 Κατηγορίες):</label>
+                <select id="category-select">
+                    <option value="" disabled selected>Επιλογή θεματικής ενότητας...</option>
+                    <option value="Συνταγματικό Δίκαιο">1. Συνταγματικό Δίκαιο</option>
+                    <option value="Διοικητικό Δίκαιο">2. Διοικητικό Δίκαιο</option>
+                    <option value="Ευρωπαϊκοί Θεσμοί και Δίκαιο">3. Ευρωπαϊκοί Θεσμοί και Δίκαιο</option>
+                    <option value="Οικονομικές Επιστήμες">4. Οικονομικές Επιστήμες</option>
+                    <option value="Πληροφορική και Ψηφιακή Διακυβέρνηση">5. Πληροφορική και Ψηφιακή Διακυβέρνηση</option>
+                    <option value="Σύγχρονη Ιστορία της Ελλάδος">6. Σύγχρονη Ιστορία της Ελλάδος</option>
+                    <option value="Κώδικας Κατάστασης Δημοσίων Υπαλλήλων και Υπαλλήλων ΝΠΔΔ">7. Κώδικας Κατάστασης Δημοσίων Υπαλλήλων και Υπαλλήλων ΝΠΔΔ</option>
+                    <option value="Γενικός Κανονισμός για την Προστασία Δεδομένων (GDPR)">8. Γενικός Κανονισμός για την Προστασία Δεδομένων (GDPR)</option>
+                    <option value="Διοίκηση Επιχειρήσεων και Οργανισμών">9. Διοίκηση Επιχειρήσεων και Οργανισμών</option>
+                    <option value="Διοίκηση Ανθρώπινου Δυναμικού">10. Διοίκηση Ανθρώπινου Δυναμικού</option>
+                    <option value="Κώδικας Συμπεριφοράς Δημοσίων Υπαλλήλων">11. Κώδικας Συμπεριφοράς Δημοσίων Υπαλλήλων</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Πλήθος Ερωτήσεων Εξέτασης:</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="question-count" value="10" checked> 10 ερωτήσεις</label>
+                    <label class="radio-label"><input type="radio" name="question-count" value="20"> 20 ερωτήσεις</label>
+                    <label class="radio-label"><input type="radio" name="question-count" value="50"> 50 ερωτήσεις</label>
+                    <label class="radio-label"><input type="radio" name="question-count" value="all"> Όλες οι ερωτήσεις</label>
+                </div>
+            </div>
+            <button id="start-btn" class="btn">Έναρξη Εξέτασης</button>
+        </div>
+
+        <!-- Quiz -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-status">
+                <span id="question-counter">Ερώτηση 1 / 10</span>
+                <span id="category-indicator" style="font-weight: 500; color: var(--primary);">Κατηγορία</span>
+            </div>
+            <div id="question-text" class="question-text">Φόρτωση ερώτησης...</div>
+            <div id="options-container" class="options-list"></div>
+            <button id="next-btn" class="btn" style="display: none;">Επιβεβαίωση & Επόμενη</button>
+        </div>
+
+        <!-- Results -->
+        <div id="result-screen" class="screen">
+            <div class="score-container">
+                <div id="score-percentage" class="score-percentage">0%</div>
+                <div id="score-text" class="score-text">Απαντήσατε σωστά σε 0 από 0 ερωτήσεις.</div>
+            </div>
+            <div class="review-section">
+                <h3>Αναλυτική Αναφορά Απαντήσεων</h3>
+                <div id="review-container" class="review-container"></div>
+            </div>
+            <button id="restart-btn" class="btn" style="margin-top: 20px;">Επιστροφή στην Αρχική</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Εξωτερικό αρχείο δεδομένων -->
+<script src="questions.js"></script>
+
+<script>
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = [];
+    let selectedOptionValue = null;
+
+    const setupScreen = document.getElementById('setup-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const categorySelect = document.getElementById('category-select');
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const optionsContainer = document.getElementById('options-container');
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function showScreen(screenElement) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        screenElement.classList.add('active');
+    }
+
+    startBtn.addEventListener('click', () => {
+        const selectedCat = categorySelect.value;
+        if (!selectedCat) {
+            alert("Παρακαλώ επιλέξτε ένα γνωστικό αντικείμενο.");
+            return;
+        }
+
+        // Ο πίνακας quizData έρχεται από το questions.js
+        if (typeof quizData === 'undefined') {
+            alert("Το αρχείο των ερωτήσεων (questions.js) δεν βρέθηκε ή δεν φόρτωσε σωστά.");
+            return;
+        }
+
+        let baseQuestions = quizData[selectedCat] || [];
+        if (baseQuestions.length === 0) {
+            alert("Η συγκεκριμένη κατηγορία δεν περιέχει ακόμα ερωτήσεις.");
+            return;
+        }
+
+        currentQuestions = JSON.parse(JSON.stringify(baseQuestions));
+        shuffleArray(currentQuestions);
+
+        const countSetting = document.querySelector('input[name="question-count"]:checked').value;
+        if (countSetting !== 'all') {
+            const num = parseInt(countSetting);
+            currentQuestions = currentQuestions.slice(0, Math.min(num, currentQuestions.length));
+        }
+
+        currentQuestions.forEach(q => shuffleArray(q.options));
+
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+        document.getElementById('category-indicator').textContent = selectedCat;
+
+        showScreen(quizScreen);
+        loadQuestion();
+    });
+
+    function loadQuestion() {
+        const currentQ = currentQuestions[currentQuestionIndex];
+        document.getElementById('question-counter').textContent = `Ερώτηση ${currentQuestionIndex + 1} από ${currentQuestions.length}`;
+        document.getElementById('question-text').textContent = currentQ.question;
+        
+        optionsContainer.innerHTML = '';
+        selectedOptionValue = null;
+        nextBtn.style.display = 'none';
+
+        currentQ.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOptionValue = opt;
+                nextBtn.style.display = 'block';
+                
+                if (currentQuestionIndex === currentQuestions.length - 1) {
+                    nextBtn.textContent = "Ολοκλήρωση & Αποτελέσματα";
+                } else {
+                    nextBtn.textContent = "Επιβεβαίωση & Επόμενη";
+                }
+            });
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    nextBtn.addEventListener('click', () => {
+        const currentQ = currentQuestions[currentQuestionIndex];
+        const isCorrect = selectedOptionValue === currentQ.answer;
+
+        if (isCorrect) score++;
+
+        userAnswers.push({
+            question: currentQ.question,
+            selected: selectedOptionValue,
+            correct: currentQ.answer,
+            isCorrect: isCorrect
+        });
+
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    });
+
+    function showResults() {
+        showScreen(resultScreen);
+        const total = currentQuestions.length;
+        const percentage = Math.round((score / total) * 100);
+        
+        document.getElementById('score-percentage').textContent = `${percentage}%`;
+        document.getElementById('score-text').textContent = `Απαντήσατε σωστά σε ${score} από τις ${total} ερωτήσεις.`;
+        
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        userAnswers.forEach((ans, i) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `review-item ${ans.isCorrect ? 'correct' : 'wrong'}`;
+            let htmlContent = `<div class="review-q">${i + 1}. ${ans.question}</div>
+                <div class="review-ans">Η απάντησή σας: <span class="${ans.isCorrect ? 'text-success' : 'text-danger'}">${ans.selected}</span></div>`;
+
+            if (!ans.isCorrect) {
+                htmlContent += `<div class="review-ans">Σωστή απάντηση: <span class="text-success">${ans.correct}</span></div>`;
+            }
+
+            itemDiv.innerHTML = htmlContent;
+            reviewContainer.appendChild(itemDiv);
+        });
+    }
+
+    restartBtn.addEventListener('click', () => {
+        categorySelect.value = "";
+        showScreen(setupScreen);
+    });
+</script>
+</body>
+</html>
